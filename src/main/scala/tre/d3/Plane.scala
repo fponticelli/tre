@@ -1,13 +1,15 @@
 package tre.d3
 
+import tre.Precision._
+
 /**
   * Created by francoponticelli on 6/2/16.
   */
 case class Plane(normal : Point, w : Double) {
   def flip() = Plane(-normal, -w)
 
-  def toString()
-    s"Plane(normal=$normal,w=$w)";
+  override def toString(): String =
+    s"Plane(normal=$normal,w=$w)"
 }
 
 object Plane {
@@ -20,32 +22,33 @@ object Plane {
     Plane(n, n dot a)
   }
 
-  def fromNormalAndPoint(normal : Point, point : Point) {
-    val n = normal normalize
-    return new Plane(n, point dot n)
-  }
-}
-
-/*
   // like fromPoints, but allow the vectors to be on one point or one line
   // in such a case a random plane through the given points is constructed
-  public static function anyPlaneFromPoints(a : Point, b : Point, c : Point) {
-    var v1 = b.subtractPoint(a),
-        v2 = c.subtractPoint(a);
-    if(v1.length < Floats.EPSILON)
+  def anyPlaneFromPoints(a: Point, b: Point, c: Point): Plane = {
+    var v1 = b - a
+    var v2 = c - a
+    if(v1.length ~= 0.1)
       v1 = v2.randomNonParallelVector();
-    if(v2.length < Floats.EPSILON)
+    if(v2.length ~= 0)
       v2 = v1.randomNonParallelVector();
     var normal = v1.cross(v2);
-    if(normal.length < Floats.EPSILON)
-    {
+    if(normal.length ~= 0) {
       // this would mean that v1 == v2.negated()
       v2 = v1.randomNonParallelVector();
       normal = v1.cross(v2);
     }
     normal = normal.normalize();
-    return new Plane(normal, normal.dot(a));
+    Plane(normal, normal.dot(a));
   }
+
+  def fromNormalAndPoint(normal : Point, point : Point) {
+    val n = normal.normalize
+    new Plane(n, point dot n)
+  }
+}
+
+/*
+
 
   public function splitPolygon(polygon : Polygon, coplanarFront : Array<Polygon>, coplanarBack : Array<Polygon>, front : Array<Polygon>, back : Array<Polygon>) {
     var polygonType = 0,

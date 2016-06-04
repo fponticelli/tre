@@ -34,6 +34,18 @@ case class Point(x: Double, y: Double, z: Double) {
         Math.max(z, that.z)
       )
 
+  // find a vector that is somewhat perpendicular to this one
+  def randomNonParallelVector(): Point = {
+    val a = abs()
+    if((a.x <= a.y) && (a.x <= a.z)) {
+      Point(1, 0, 0);
+    } else if((a.y <= a.x) && (a.y <= a.z)) {
+      Point(0, 1, 0);
+    } else {
+      Point(0, 0, 1);
+    }
+  }
+
   def + (that: Point) = Point(x + that.x, y + that.y, z + that.z)
   def + (d: Double) = Point(x + d, y + d, z + d)
   def - (that: Point) = this + -that;
@@ -66,18 +78,6 @@ object Point {
   // Returns a new Point3D
   inline public function transform(matrix : Matrix44)
     return matrix.leftMultiplyPoint3D((this : Point));
-
-  // find a vector that is somewhat perpendicular to this one
-  public function randomNonParallelVector() : Point {
-    var a = abs();
-    if((a.x <= a.y) && (a.x <= a.z)) {
-      return Point.create(1, 0, 0);
-    } else if((a.y <= a.x) && (a.y <= a.z)) {
-      return Point.create(0, 1, 0);
-    } else {
-      return Point.create(0, 0, 1);
-    }
-  }
 
 /*
   public function isOnLine(line : Line3D) : Bool {
