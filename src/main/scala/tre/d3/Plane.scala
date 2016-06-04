@@ -17,7 +17,7 @@ case class Plane(normal : Point, w : Double) {
     val (types, polygonType) = polygon.foldLeft((List[Int](), COPLANAR)){
       (acc: (List[Int], Int), vertex: Vertex) =>
         val t = normal dot(vertex.position) - w
-        val polygonType = if(t < - MachinePrecision.p) BACK else if(t > MachinePrecision.p) FRONT else COPLANAR
+        val polygonType = if(t <~ 0) BACK else if(t >~ 0) FRONT else COPLANAR
         val list: List[Int] = acc._1 :+ polygonType
         (list, acc._2 | polygonType)
     }
@@ -87,12 +87,12 @@ object Plane {
   def anyPlaneFromPoints(a: Point, b: Point, c: Point): Plane = {
     var v1 = b - a
     var v2 = c - a
-    if(v1.length ~= 0)
+    if(v1.length =~ 0)
       v1 = v2.randomNonParallelVector
-    if(v2.length ~= 0)
+    if(v2.length =~ 0)
       v2 = v1.randomNonParallelVector
     var normal = v1 cross v2
-    if(normal.length ~= 0) {
+    if(normal.length =~ 0) {
       // this would mean that v1 == -v2
       v2 = v1.randomNonParallelVector
       normal = v1 cross v2
@@ -108,57 +108,6 @@ object Plane {
 }
 
 /*
-
-
-  public function splitPolygon(polygon : Polygon, coplanarFront : List[Polygon], coplanarBack : List[Polygon], front : List[Polygon], back : List[Polygon]) {
-    var polygonType = 0,
-        types = [],
-        t, type,
-        f, b, len, j, ti, vi, tj, vj, t, v;
-
-    for(vertex in polygon) {
-      t = normal.dot(vertex.position) - w;
-      type = (t < -Floats.EPSILON) ? BACK : (t > Floats.EPSILON) ? FRONT : COPLANAR;
-      polygonType |= type;
-      types.push(type);
-    }
-
-    switch polygonType {
-      case COPLANAR:
-        (normal.dot(polygon.plane.normal) > 0 ? coplanarFront : coplanarBack).push(polygon);
-      case FRONT:
-        front.push(polygon);
-      case BACK:
-        back.push(polygon);
-      case SPANNING:
-        f = [];
-        b = [];
-        len = polygon.vertices.length;
-        for (i in 0...len) {
-          j = (i + 1) % len;
-          ti = types[i];
-          tj = types[j];
-          vi = polygon.vertices[i];
-          vj = polygon.vertices[j];
-          if (ti != BACK)
-            f.push(vi);
-          if (ti != FRONT)
-            b.push(vi); // was: (ti != BACK ? vi.clone() : vi);
-          if ((ti | tj) == SPANNING) {
-            t = (w - normal.dot(vi.position)) /
-                normal.dot(vj.position.subtractPoint(vi.position));
-            v = vi.interpolate(vj, t);
-            f.push(v);
-            b.push(v); // was: v.clone()
-          }
-        }
-        if (f.length >= 3)
-          front.push(new Polygon(f));
-        if (b.length >= 3)
-          back.push(new Polygon(b));
-    }
-  }
-
   public function equals(other : Plane)
     return normal.equals(other.normal) && (w == other.w);
 

@@ -1,5 +1,6 @@
 package tre.d3
 
+import tre.Precision._
 import Math._;
 
 /**
@@ -56,6 +57,7 @@ case class Point(x: Double, y: Double, z: Double) {
   def / (that: Point) = Point(x / that.x, y / that.y, z / that.z)
   def / (d: Double) = Point(x / d, y / d, z / d)
   def unary_- () = Point(-x, -y, -z)
+  def ~= (that: Point) = x =~ that.x && y =~ that.y && z =~ that.z
   override def toString() = s"($x,$y,$z)"
 }
 
