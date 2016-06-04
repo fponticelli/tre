@@ -8,8 +8,68 @@ import tre.Precision._
 case class Plane(normal : Point, w : Double) {
   def flip() = Plane(-normal, -w)
 
+  private val COPLANAR = 0;
+  private val FRONT = 1;
+  private val BACK = 2;
+  private val SPANNING = 3;
+
+  def splitPolygon(polygon: Polygon): List[SplitPolygon] = {
+    val (types, polygonType) = polygon.foldLeft((List[Int](), COPLANAR)){
+      (acc: (List[Int], Int), vertex: Vertex) =>
+        val t = normal dot(vertex.position) - w
+        val polygonType = if(t < - MachinePrecision.p) BACK else if(t > MachinePrecision.p) FRONT else COPLANAR
+        val list: List[Int] = acc._1 :+ polygonType
+        (list, acc._2 | polygonType)
+    }
+
+    if(polygonType == COPLANAR) {
+      if(normal.dot(polygon.plane.normal) > 0)
+        List(CoplanarFront(polygon))
+      else
+        List(CoplanarBack(polygon))
+    } else if(polygonType == FRONT) {
+      List(Front(polygon));
+    } else if(polygonType == BACK) {
+      List(Back(polygon));
+    } else { // SPANNING
+      val len = polygon.vertices.length
+      val range = 0 until len
+      val (front: List[Vertex], back: List[Vertex]) = range.foldLeft((List[Vertex](), List[Vertex]()))
+      {
+        (acc: (List[Vertex], List[Vertex]), i: Int) =>
+          val j = (i + 1) % len
+          val ti = types(i)
+          val tj = types(j)
+          val vi = polygon.vertices(i)
+          val vj = polygon.vertices(j)
+          val append = if((ti | tj) == SPANNING) {
+            val t = (w - normal.dot(vi.position)) / normal.dot(vj.position - vi.position)
+            List(vi.interpolate(vj)(t))
+          } else {
+            Nil;
+          }
+          val front = if(ti != BACK) acc._1 :+ vi else acc._1
+          val back = if(ti != FRONT) acc._2 :+ vi else acc._2
+          (
+            front ++ append,
+            back ++ append
+          )
+      }
+
+      (if(front.length > 2) List(Front(Polygon(front))) else Nil) ++ (if(back.length > 2) List(Back(Polygon(back))) else Nil)
+    }
+  }
+
   override def toString(): String =
     s"Plane(normal=$normal,w=$w)"
+
+
+  sealed class SplitPolygon
+
+  case class CoplanarFront(polygon: Polygon) extends SplitPolygon
+  case class CoplanarBack(polygon: Polygon) extends SplitPolygon
+  case class Front(polygon: Polygon) extends SplitPolygon
+  case class Back(polygon: Polygon) extends SplitPolygon
 }
 
 object Plane {
@@ -27,18 +87,18 @@ object Plane {
   def anyPlaneFromPoints(a: Point, b: Point, c: Point): Plane = {
     var v1 = b - a
     var v2 = c - a
-    if(v1.length ~= 0.1)
-      v1 = v2.randomNonParallelVector();
+    if(v1.length ~= 0)
+      v1 = v2.randomNonParallelVector
     if(v2.length ~= 0)
-      v2 = v1.randomNonParallelVector();
-    var normal = v1.cross(v2);
+      v2 = v1.randomNonParallelVector
+    var normal = v1 cross v2
     if(normal.length ~= 0) {
-      // this would mean that v1 == v2.negated()
-      v2 = v1.randomNonParallelVector();
-      normal = v1.cross(v2);
+      // this would mean that v1 == -v2
+      v2 = v1.randomNonParallelVector
+      normal = v1 cross v2
     }
-    normal = normal.normalize();
-    Plane(normal, normal.dot(a));
+    normal = normal.normalize
+    Plane(normal, normal dot a)
   }
 
   def fromNormalAndPoint(normal : Point, point : Point) {
@@ -50,7 +110,7 @@ object Plane {
 /*
 
 
-  public function splitPolygon(polygon : Polygon, coplanarFront : Array<Polygon>, coplanarBack : Array<Polygon>, front : Array<Polygon>, back : Array<Polygon>) {
+  public function splitPolygon(polygon : Polygon, coplanarFront : List[Polygon], coplanarBack : List[Polygon], front : List[Polygon], back : List[Polygon]) {
     var polygonType = 0,
         types = [],
         t, type,
