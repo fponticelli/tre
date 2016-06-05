@@ -43,23 +43,6 @@ object Solid {
 }
 
 /*
-  public static function box(position : Point, size : Point) {
-    if(null == position)
-      position = Point.zero;
-    return Solid.fromPolygons(
-      baseCube.map(function(info) {
-        return new Polygon(info.p.map(function(i) {
-          var pos = Point.create(
-            position.x + size.x * ((i & 1 != 0) ? 1 : 0),
-            position.y + size.y * ((i & 2 != 0) ? 1 : 0),
-            position.z + size.z * ((i & 4 != 0) ? 1 : 0)
-          );
-          return new Vertex(pos, info.n);
-        }));
-      })
-    );
-  }
-
   public static function cylinder(start : Point, end : Point, radius = 1.0, ?resolution : Float -> Int) {
     if(null == resolution)
       resolution = getResolution;
