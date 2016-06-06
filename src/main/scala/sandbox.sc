@@ -13,3 +13,7 @@ val p = Point(1,2,3) * 7
 
 val cube1 = Solid.box(Point(10, 10, 10))
 val cube2 = Solid.box(Point(5, 5, 5), Point(10, 10, 10))
+
+cube1 ^ cube2
+cube1 + cube2
+cube1 - cube2

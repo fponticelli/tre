@@ -62,15 +62,14 @@ case class Plane(normal : Point, w : Double) {
 
   override def toString(): String =
     s"Plane(normal=$normal,w=$w)"
-
-
-  sealed class SplitPolygon
-
-  case class CoplanarFront(polygon: Polygon) extends SplitPolygon
-  case class CoplanarBack(polygon: Polygon) extends SplitPolygon
-  case class Front(polygon: Polygon) extends SplitPolygon
-  case class Back(polygon: Polygon) extends SplitPolygon
 }
+
+sealed class SplitPolygon
+
+case class CoplanarFront(polygon: Polygon) extends SplitPolygon
+case class CoplanarBack(polygon: Polygon) extends SplitPolygon
+case class Front(polygon: Polygon) extends SplitPolygon
+case class Back(polygon: Polygon) extends SplitPolygon
 
 object Plane {
   val PX = Plane(Point(1, 0, 0), 0)

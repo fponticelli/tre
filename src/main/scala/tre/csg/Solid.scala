@@ -6,7 +6,53 @@ trait Solid extends Iterable[Polygon] {
   def polygons: List[Polygon]
 
   def iterator() = polygons iterator
-  def toStirng() = s"Solid(polygons=${polygons.length})"
+
+  def +(other: Solid): Solid = {
+    val a = new Node(Some(polygons))
+    val b = new Node(Some(other.polygons))
+
+    a clipTo b
+    b clipTo a
+    b.invert
+    b clipTo a
+    b.invert
+    a.build(b.all)
+
+    Solid.fromPolygons(a.all.toList)
+  }
+
+  def -(other: Solid): Solid = {
+    val a = new Node(Some(polygons))
+    val b = new Node(Some(other.polygons))
+
+    a.invert
+    a clipTo b
+    b clipTo a
+    b.invert
+    b clipTo a
+    b.invert
+    a.build(b.all)
+    a.invert
+
+    Solid.fromPolygons(a.all.toList)
+  }
+
+  def ^(other: Solid): Solid = {
+    val a = new Node(Some(polygons))
+    val b = new Node(Some(other.polygons))
+
+    a.invert
+    b clipTo a
+    b.invert
+    a clipTo b
+    b clipTo a
+    a.build(b.all)
+    a.invert
+
+    Solid.fromPolygons(a.all.toList)
+  }
+
+  override def toString() = s"Solid(polygons=${polygons.length})"
 }
 
 object Solid {
