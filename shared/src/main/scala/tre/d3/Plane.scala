@@ -2,9 +2,6 @@ package tre.d3
 
 import tre.Precision._
 
-/**
-  * Created by francoponticelli on 6/2/16.
-  */
 case class Plane(normal : Point, w : Double) {
   def flip() = Plane(-normal, -w)
 

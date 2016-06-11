@@ -1,7 +1,6 @@
 package tre
 import scala.annotation.tailrec
 
-
 object Precision {
   val machineEpsilon = {
     @tailrec

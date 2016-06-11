@@ -3,9 +3,6 @@ package tre.d3
 import tre.Precision._
 import Math._;
 
-/**
-  * Created by francoponticelli on 6/2/16.
-  */
 case class Point(x: Double, y: Double, z: Double) {
   lazy val length = sqrt(lengthSquared)
   lazy val lengthSquared = x * x + y * y + z * z

@@ -1,8 +1,5 @@
 package tre.d3
 
-/**
-  * Created by francoponticelli on 6/2/16.
-  */
 case class Vertex(position : Point, normal : Point) {
   def interpolate(that: Vertex)(t: Double) =
     Vertex(
