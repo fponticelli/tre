@@ -61,7 +61,7 @@ case class Plane(normal : Point, w : Double) {
     s"Plane(normal=$normal,w=$w)"
 }
 
-sealed class SplitPolygon
+abstract sealed class SplitPolygon
 
 case class CoplanarFront(polygon: Polygon) extends SplitPolygon
 case class CoplanarBack(polygon: Polygon) extends SplitPolygon
