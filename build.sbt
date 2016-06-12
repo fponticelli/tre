@@ -20,7 +20,7 @@ lazy val tre = crossProject.in(file(".")).
   ).
   jsSettings(
     // Add JS-specific settings here
-    libraryDependencies += "org.denigma" %%% "threejs-facade" % "0.0.74-SNAPSHOT" //add dependency
+    libraryDependencies += "org.denigma" %%% "threejs-facade" % "0.0.77-SNAPSHOT" //add dependency
   )
 
 lazy val treJVM = tre.jvm
