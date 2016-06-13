@@ -44,6 +44,13 @@ case class Point(x: Double, y: Double, z: Double) {
     }
   }
 
+  def addX (d: Double) = Point(x + d, y, z)
+  def addY (d: Double) = Point(x, y + d, z)
+  def addZ (d: Double) = Point(x, y, z + d)
+  def withX (d: Double) = Point(d, y, z)
+  def withY (d: Double) = Point(x, d, z)
+  def withZ (d: Double) = Point(x, y, d)
+
   def + (that: Point) = Point(x + that.x, y + that.y, z + that.z)
   def + (d: Double) = Point(x + d, y + d, z + d)
   def - (that: Point) = this + -that;

@@ -72,6 +72,9 @@ object Solid {
     (List(4, 5, 7, 6), Point( 0.0,  0.0,  1.0))
   )
 
+  def cube(side: Double): Solid = cube(Point.zero, side)
+  def cube(position: Point, side: Double): Solid = box(position, Point(side, side, side))
+
   def box(size: Point): Solid = box(Point.zero, size)
   def box(position: Point, size: Point): Solid =
     fromPolygons(baseCube map {
@@ -87,7 +90,7 @@ object Solid {
         })
     })
 
-  def sphere(position: Point, radius: Double = 1.0)(implicit res: Resolution): Solid = {
+  def sphere(position: Point, radius: Double)(implicit res: Resolution): Solid = {
     val slices = res.resolutionByRadius(radius)
     val stacks = Math.ceil(slices.toDouble / 2).toInt
 
@@ -118,7 +121,10 @@ object Solid {
     Solid.fromPolygons(polygons.toList)
   }
 
-  def cylinder(start: Point, end: Point, radius: Double = 1.0)(implicit res: Resolution): Solid = {
+  def cylinder(center: Point, length: Double, radius: Double)(implicit res: Resolution): Solid =
+    cylinder(center, center addZ length, radius)(res)
+
+  def cylinder(start: Point, end: Point, radius: Double)(implicit res: Resolution): Solid = {
     val slices   = res.resolutionByRadius(radius)
     val ray      = end - (start)
     val axisZ    = ray.normalize()
