@@ -11,21 +11,23 @@ class Node(polys: Option[List[Polygon]]) {
   var front: Node = null
   var back: Node = null
   var polygons: mutable.ArrayBuffer[Polygon] = new mutable.ArrayBuffer[Polygon]()
+
+  private val COPLANAR = 0;
+  private val FRONT = 1;
+  private val BACK = 2;
+  private val SPANNING = 3;
+
   polys
-    .map({
-        xs => xs.foldLeft(new mutable.ArrayBuffer[Polygon]) {
-          (buff, p) => buff += p
-        }
-      })
+    .map { _.foldLeft(new mutable.ArrayBuffer[Polygon]) { _ += _ } }
     .foreach(build)
 
-  def build(poly: mutable.ArrayBuffer[Polygon]): Unit = {
-    if(poly.length > 0) {
+  def build(polys: mutable.ArrayBuffer[Polygon]): Unit = {
+    if(polys.length > 0) {
       if(null == plane)
-        plane = poly(0).plane
-      var front = new mutable.ArrayBuffer[Polygon]()
-      var back  = new mutable.ArrayBuffer[Polygon]()
-      poly.foreach(splitPolygon(plane, _, this.polygons, this.polygons, front, back))
+        plane = polys(0).plane
+      val front = new mutable.ArrayBuffer[Polygon]()
+      val back  = new mutable.ArrayBuffer[Polygon]()
+      polys.foreach { splitPolygonByPlane(plane, _, this.polygons, this.polygons, front, back) }
       if(front.length > 0) {
         if(null == this.front)
           this.front = new Node(None)
@@ -42,99 +44,13 @@ class Node(polys: Option[List[Polygon]]) {
   def splitPolygonByPlane(plane: Plane, polygon: Polygon, coplanarFront: mutable.ArrayBuffer[Polygon], coplanarBack: mutable.ArrayBuffer[Polygon], front: mutable.ArrayBuffer[Polygon], back: mutable.ArrayBuffer[Polygon]) = {
     plane.splitPolygon(polygon).foreach {
       (split: SplitPolygon) => split match {
-        case CoplanarFront(p) => coplanarFront += p
-        case CoplanarBack(p) => coplanarBack += p
-        case Front(p) => front += p
-        case Back(p) => back += p
+        case CoplanarFront(p) => coplanarFront append p
+        case CoplanarBack(p) => coplanarBack append p
+        case Front(p) => front append p
+        case Back(p) => back append p
       }
     }
   }
-
-  def splitPolygon(plane: Plane, polygon: Polygon, coplanarFront: mutable.ArrayBuffer[Polygon], coplanarBack: mutable.ArrayBuffer[Polygon], front: mutable.ArrayBuffer[Polygon], back: mutable.ArrayBuffer[Polygon]) = {
-    var polygonType = 0
-    var t = 0.0
-    var type_ = 0
-    var types = new mutable.ArrayBuffer[Int]
-    for(vertex <- polygon) {
-      t = plane.normal.dot(vertex.position) - plane.w
-      type_ = if(t <~ 0) BACK else if(t >~ 0) FRONT else COPLANAR
-      polygonType |= type_
-      types += type_
-    }
-    polygonType match {
-      case COPLANAR => (if(plane.normal.dot(polygon.plane.normal) > 0) coplanarFront else coplanarBack) += polygon
-      case FRONT => front += polygon
-      case BACK => back += polygon
-      case SPANNING =>
-        var f = new mutable.ArrayBuffer[Vertex]
-        var b = new mutable.ArrayBuffer[Vertex]
-        var vertices = polygon.vertices.toArray
-        var len = vertices.length
-        var j = 0
-        var t = 0.0
-        var ti = 0
-        var tj = 0
-        var v: Vertex = null
-        var vi: Vertex = null
-        var vj: Vertex = null
-        for(i <- 0 until len) {
-          j = (i + 1) % len
-          ti = types(i)
-          tj = types(j)
-          vi = vertices(i)
-          vj = vertices(j)
-          if(ti != BACK)
-            f :+ vi
-          if(ti != FRONT)
-            b :+ vi
-          if((ti | tj) == SPANNING) {
-            t = (plane.w - plane.normal.dot(vi.position)) / plane.normal.dot(vj.position - vi.position)
-            v = vi.interpolate(vj)(t)
-            f :+ v
-            b :+ v
-          }
-        }
-        if(f.length >= 3)
-          front :+ Polygon(f.toList)
-        if(b.length >= 3)
-          back :+ Polygon(b.toList)
-    }
-/*
-  public function splitPolygon(polygon : Polygon, coplanarFront : Array<Polygon>, coplanarBack : Array<Polygon>, front : Array<Polygon>, back : Array<Polygon>) {
-        f = [];
-        b = [];
-        len = polygon.vertices.length;
-        for (i in 0...len) {
-          j = (i + 1) % len;
-          ti = types[i];
-          tj = types[j];
-          vi = polygon.vertices[i];
-          vj = polygon.vertices[j];
-          if (ti != BACK)
-            f.push(vi);
-          if (ti != FRONT)
-            b.push(vi); // was: (ti != BACK ? vi.clone() : vi);
-          if ((ti | tj) == SPANNING) {
-            t = (w - normal.dot(vi.position)) /
-                normal.dot(vj.position.subtractPoint(vi.position));
-            v = vi.interpolate(vj, t);
-            f.push(v);
-            b.push(v); // was: v.clone()
-          }
-        }
-        if (f.length >= 3)
-          front.push(new Polygon(f));
-        if (b.length >= 3)
-          back.push(new Polygon(b));
-    }
-  }
- */
-  }
-
-  private val COPLANAR = 0;
-  private val FRONT = 1;
-  private val BACK = 2;
-  private val SPANNING = 3;
 
   def invert(): Unit = {
     polygons = polygons.map { _.flip() }
@@ -150,17 +66,17 @@ class Node(polys: Option[List[Polygon]]) {
     if(null == this.plane)
       polys.clone()
     else {
-      var front = new mutable.ArrayBuffer[Polygon]
-      var back  = new mutable.ArrayBuffer[Polygon]
-      polys.foreach { splitPolygon(plane, _, front, back, front, back) }
+      var f = new mutable.ArrayBuffer[Polygon]
+      var b = new mutable.ArrayBuffer[Polygon]
+      polys.foreach { splitPolygonByPlane(plane, _, f, b, f, b) }
 
-      if(null != this.front)
-        front = this.front.clipPolygons(front)
-      if(null != this.back)
-        back = this.back.clipPolygons(back)
+      if(null != front)
+        f = front.clipPolygons(f)
+      if(null != back)
+        b = back.clipPolygons(b)
       else
-        back = new mutable.ArrayBuffer[Polygon]
-      front ++ back
+        b = new mutable.ArrayBuffer[Polygon]
+      f ++ b
     }
   }
 

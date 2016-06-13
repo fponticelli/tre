@@ -1,19 +1,20 @@
 package tre.d3
 
 import tre.Precision._
+import scala.collection.mutable
 
 case class Plane(normal : Point, w : Double) {
   def flip() = Plane(-normal, -w)
 
-  private val COPLANAR = 0;
-  private val FRONT = 1;
-  private val BACK = 2;
-  private val SPANNING = 3;
+  private val COPLANAR = 0
+  private val FRONT = 1
+  private val BACK = 2
+  private val SPANNING = 3
 
   def splitPolygon(polygon: Polygon): List[SplitPolygon] = {
     val (types, polygonType) = polygon.foldLeft((List[Int](), COPLANAR)){
       (acc: (List[Int], Int), vertex: Vertex) =>
-        val t = normal dot(vertex.position) - w
+        val t = normal.dot(vertex.position) - w
         val polygonType = if(t <~ 0) BACK else if(t >~ 0) FRONT else COPLANAR
         val list: List[Int] = acc._1 :+ polygonType
         (list, acc._2 | polygonType)
@@ -25,9 +26,9 @@ case class Plane(normal : Point, w : Double) {
       else
         List(CoplanarBack(polygon))
     } else if(polygonType == FRONT) {
-      List(Front(polygon));
+      List(Front(polygon))
     } else if(polygonType == BACK) {
-      List(Back(polygon));
+      List(Back(polygon))
     } else { // SPANNING
       val len = polygon.vertices.length
       val range = 0 until len
@@ -43,7 +44,7 @@ case class Plane(normal : Point, w : Double) {
             val t = (w - normal.dot(vi.position)) / normal.dot(vj.position - vi.position)
             List(vi.interpolate(vj)(t))
           } else {
-            Nil;
+            Nil
           }
           val front = if(ti != BACK) acc._1 :+ vi else acc._1
           val back = if(ti != FRONT) acc._2 :+ vi else acc._2
@@ -105,7 +106,7 @@ object Plane {
 
 /*
   public function equals(other : Plane)
-    return normal.equals(other.normal) && (w == other.w);
+    return normal.equals(other.normal) && (w == other.w)
 
   public function transform(matrix : Matrix44) {
     var ismirror = matrix.isMirroring(),
@@ -116,53 +117,53 @@ object Plane {
       // get 3 points in the plane:
       point1 = normal.multiply(w),
       point2 = point1.addPoint(u),
-      point3 = point1.addPoint(v);
+      point3 = point1.addPoint(v)
     // transform the points:
-    point1 = point1.transform(matrix);
-    point2 = point2.transform(matrix);
-    point3 = point3.transform(matrix);
+    point1 = point1.transform(matrix)
+    point2 = point2.transform(matrix)
+    point3 = point3.transform(matrix)
     // and create a new plane from the transformed points:
-    var newplane = Plane.fromPoints(point1, point2, point3);
+    var newplane = Plane.fromPoints(point1, point2, point3)
     if(ismirror) {
       // the transform is mirroring
       // We should mirror the plane:
-      newplane = newplane.flip();
+      newplane = newplane.flip()
     }
-    return newplane;
+    return newplane
   }
 
   // robust splitting of a line by a plane
   // will work even if the line is parallel to the plane
   public function splitLineBetweenPoints(p1 : Point, p2 : Point) {
     var direction = p2.subtractPoint(p1),
-        lambda = (w - normal.dot(p1)) / normal.dot(direction);
+        lambda = (w - normal.dot(p1)) / normal.dot(direction)
     if(Math.isNaN(lambda))
-      lambda = 0;
+      lambda = 0
     else if(lambda > 1)
-      lambda = 1;
+      lambda = 1
     else if(lambda < 0)
-      lambda = 0;
-    return p1.addPoint(direction.multiply(lambda));
+      lambda = 0
+    return p1.addPoint(direction.multiply(lambda))
   }
 
   public function intersectWithLine(line : Line3D) : Point
-    return line.intersectWithPlane(this);
+    return line.intersectWithPlane(this)
 
   // intersection of two planes
   public function intersectWithPlane(plane : Plane)
-    return Line3D.fromPlanes(this, plane);
+    return Line3D.fromPlanes(this, plane)
 
   public function signedDistanceToPoint(point)
-    return normal.dot(point) - w;
+    return normal.dot(point) - w
 
   public function mirrorPoint(point3d) {
-    var distance = this.signedDistanceToPoint(point3d);
-    var mirrored = point3d.subtractPoint(this.normal.multiply(distance * 2.0));
-    return mirrored;
+    var distance = this.signedDistanceToPoint(point3d)
+    var mirrored = point3d.subtractPoint(this.normal.multiply(distance * 2.0))
+    return mirrored
   }
 
-  static inline var COPLANAR = 0;
-  static inline var FRONT = 1;
-  static inline var BACK = 2;
-  static inline var SPANNING = 3;
+  static inline var COPLANAR = 0
+  static inline var FRONT = 1
+  static inline var BACK = 2
+  static inline var SPANNING = 3
  */

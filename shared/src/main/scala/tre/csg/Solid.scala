@@ -1,6 +1,7 @@
 package tre.csg
 
 import tre.d3.{Point, Polygon, Vertex}
+import scala.collection.mutable
 
 trait Solid extends Iterable[Polygon] {
   def polygons: List[Polygon]
@@ -72,7 +73,7 @@ object Solid {
   )
 
   def box(size: Point): Solid = box(Point.zero, size)
-  def box(position: Point, size : Point): Solid =
+  def box(position: Point, size: Point): Solid =
     fromPolygons(baseCube map {
       info =>
         Polygon(info._1 map {
@@ -86,122 +87,103 @@ object Solid {
         })
     })
 
+  def sphere(position: Point, radius: Double = 1.0)(implicit res: Resolution): Solid = {
+    val slices = res.resolutionByRadius(radius)
+    val stacks = Math.ceil(slices.toDouble / 2).toInt
+
+    def vertex(theta: Double, phi: Double) = {
+      val t = theta * Math.PI * 2
+      val p = phi * Math.PI
+      val dir = Point(
+        Math.cos(t) * Math.sin(p),
+        Math.cos(p),
+        Math.sin(t) * Math.sin(p)
+      )
+      Vertex(position + dir * radius, dir)
+    }
+
+    val polygons = new mutable.ArrayBuffer[Polygon]
+    for (i <- 0 until slices) {
+      for (j <- 0 until stacks) {
+        var vertices = new mutable.ArrayBuffer[Vertex]
+        vertices append vertex(i.toDouble / slices, j.toDouble / stacks)
+        if (j > 0)
+          vertices append vertex((i.toDouble + 1) / slices, j.toDouble / stacks)
+        if (j < stacks - 1)
+          vertices append vertex((i.toDouble + 1) / slices, (j.toDouble + 1) / stacks)
+        vertices append vertex(i.toDouble / slices, (j.toDouble + 1) / stacks)
+        polygons append Polygon(vertices.toList)
+      }
+    }
+    Solid.fromPolygons(polygons.toList)
+  }
+
+  def cylinder(start: Point, end: Point, radius: Double = 1.0)(implicit res: Resolution): Solid = {
+    val slices   = res.resolutionByRadius(radius)
+    val ray      = end - (start)
+    val axisZ    = ray.normalize()
+    val isY      = (Math.abs(axisZ.y) > 0.5)
+    val axisX    = Point(if(isY) 1 else 0, if(isY) 0 else 1, 0).cross(axisZ).normalize()
+    val axisY    = axisX.cross(axisZ).normalize()
+    val s        = Vertex(start, -axisZ)
+    val e        = Vertex(end, axisZ.normalize())
+    val polygons = new mutable.ArrayBuffer[Polygon]
+
+    def vertex(stack: Int, slice: Double, normalBlend: Double): Vertex = {
+      val angle = slice * Math.PI * 2;
+      val out = axisX * Math.cos(angle) + axisY * Math.sin(angle)
+      val pos = start + ray * stack + out * radius
+      val normal = out * (1 - Math.abs(normalBlend)) + axisZ * normalBlend
+      Vertex(pos, normal)
+    }
+
+    for(i <- 0 until slices) {
+      val t0 = i.toDouble / slices
+      val t1 = (i.toDouble + 1) / slices
+      polygons append Polygon(List(s, vertex(0, t0, -1), vertex(0, t1, -1)))
+      polygons append Polygon(List(vertex(0, t1, 0), vertex(0, t0, 0), vertex(1, t0, 0), vertex(1, t1, 0)))
+      polygons append Polygon(List(e, vertex(1, t1, 1), vertex(1, t0, 1)))
+    }
+    return Solid.fromPolygons(polygons.toList)
+  }
+
+  trait Resolution {
+    def resolutionByRadius(radius: Double): Int
+  }
+
+  implicit object StandardResolution extends Resolution {
+    def resolutionByRadius(radius: Double): Int = 36
+  }
 }
 
 /*
-  public static function cylinder(start : Point, end : Point, radius = 1.0, ?resolution : Float -> Int) {
+  public static function cylinder(start: Point, end: Point, radius = 1.0, ?resolution: Double -> Int) {
     if(null == resolution)
-      resolution = getResolution;
+      resolution = getResolution
     var slices   = resolution(radius),
         ray      = end.subtractPoint(start),
         axisZ    = ray.normalize(),
         isY      = (Math.abs(axisZ.y) > 0.5),
-        axisX    = Point.create(isY ? 1 : 0, isY ? 0 : 1, 0).cross(axisZ).normalize(),
+        axisX    = Point.create(isY ? 1: 0, isY ? 0: 1, 0).cross(axisZ).normalize(),
         axisY    = axisX.cross(axisZ).normalize(),
         s        = new Vertex(start, axisZ.negate()),
         e        = new Vertex(end, axisZ.normalize()),
         polygons = [],
-        t0, t1;
-    function point(stack, slice : Float, normalBlend) {
+        t0, t1
+    function point(stack, slice: Double, normalBlend) {
       var angle = slice * Math.PI * 2,
           out = axisX.multiply(Math.cos(angle)).addPoint(axisY.multiply(Math.sin(angle))),
           pos = start.addPoint(ray.multiply(stack)).addPoint(out.multiply(radius)),
-          normal = out.multiply(1 - Math.abs(normalBlend)).addPoint(axisZ.multiply(normalBlend));
-      return new Vertex(pos, normal);
+          normal = out.multiply(1 - Math.abs(normalBlend)).addPoint(axisZ.multiply(normalBlend))
+      return new Vertex(pos, normal)
     }
     for (i in 0...slices) {
-      t0 = i / slices;
-      t1 = (i + 1) / slices;
-      polygons.push(new Polygon([s, point(0, t0, -1), point(0, t1, -1)]));
-      polygons.push(new Polygon([point(0, t1, 0), point(0, t0, 0), point(1, t0, 0), point(1, t1, 0)]));
-      polygons.push(new Polygon([e, point(1, t1, 1), point(1, t0, 1)]));
+      t0 = i / slices
+      t1 = (i + 1) / slices
+      polygons.push(new Polygon([s, point(0, t0, -1), point(0, t1, -1)]))
+      polygons.push(new Polygon([point(0, t1, 0), point(0, t0, 0), point(1, t0, 0), point(1, t1, 0)]))
+      polygons.push(new Polygon([e, point(1, t1, 1), point(1, t0, 1)]))
     }
-    return Solid.fromPolygons(polygons);
+    return Solid.fromPolygons(polygons)
   }
-
-  public static dynamic function getResolution(r : Float)
-    return 36;
-
-  public static function sphere(position : Point, radius = 1.0, ?resolution : Float -> Int) {
-    if(null == resolution)
-      resolution = getResolution;
-    var slices = resolution(radius),
-        stacks = Math.ceil(slices/2),
-        polygons = [],
-        vertices : Array<Vertex> = [];
-
-    function vertex(theta : Float, phi : Float) {
-      theta *= Math.PI * 2;
-      phi *= Math.PI;
-      var dir = Point.create(
-        Math.cos(theta) * Math.sin(phi),
-        Math.cos(phi),
-        Math.sin(theta) * Math.sin(phi)
-      );
-      vertices.push(new Vertex(position.addPoint(dir.multiply(radius)), dir));
-    }
-
-    for (i in 0...slices) {
-      for (j in 0...stacks) {
-        vertices = [];
-        vertex(i / slices, j / stacks);
-        if (j > 0)
-          vertex((i + 1) / slices, j / stacks);
-        if (j < stacks - 1)
-          vertex((i + 1) / slices, (j + 1) / stacks);
-        vertex(i / slices, (j + 1) / stacks);
-        polygons.push(new Polygon(vertices));
-      }
-    }
-    return Solid.fromPolygons(polygons);
-  }
- */
-
-/*
-abstract Solid(Array<Polygon>) {
-  @:op(A+B) public function union(other : Solid) {
-    var a = new Node(toArray()),
-        b = new Node(other.toArray());
-
-    a.clipTo(b);
-    b.clipTo(a);
-    b.invert();
-    b.clipTo(a);
-    b.invert();
-    a.build(b.all());
-
-    return fromPolygons(a.all());
-  }
-
-  @:op(A-B) public function subtract(other : Solid) {
-    var a = new Node(toArray()),
-        b = new Node(other.toArray());
-
-    a.invert();
-    a.clipTo(b);
-    b.clipTo(a);
-    b.invert();
-    b.clipTo(a);
-    b.invert();
-    a.build(b.all());
-    a.invert();
-
-    return fromPolygons(a.all());
-  }
-
-  @:op(A^B)public function intersect(other : Solid) {
-    var a = new Node(toArray()),
-        b = new Node(other.toArray());
-
-    a.invert();
-    b.clipTo(a);
-    b.invert();
-    a.clipTo(b);
-    b.clipTo(a);
-    a.build(b.all());
-    a.invert();
-
-    return fromPolygons(a.all());
-  }
-}
  */

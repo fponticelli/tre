@@ -23,6 +23,7 @@ object Convert {
     }.foreach(fs.push(_))
     set.foreach(v => vs.push(new TJSVec(v.x, v.y, v.z)))
 
+    geom.computeBoundingBox()
     geom.computeBoundingSphere()
     // TODO inject normals, do not compute
     geom.computeFaceNormals()

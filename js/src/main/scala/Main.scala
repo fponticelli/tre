@@ -7,15 +7,15 @@ import org.scalajs.dom.MouseEvent
 import org.scalajs.dom.raw.{ HTMLTextAreaElement, HTMLElement }
 
 import tre.threejs.Convert._
-import tre.csg._
+import tre.csg.Solid._
 import tre.d3._
+import tre.d3.Point._
 
 object Main extends scalajs.js.JSApp {
   val width  = 800
   val height = 600
 
   def makeWorld(): (PerspectiveCamera, Scene) = {
-    dom.console.log(dom.window.devicePixelRatio)
     val scene = new Scene()
     val camera = new PerspectiveCamera(45, width.toDouble / height, 0.1, 5000)
     val renderer = new WebGLRenderer
@@ -76,8 +76,8 @@ object Main extends scalajs.js.JSApp {
     scene.add(light1)
     // scene.add(new CameraHelper(light1.shadow.camera))
 
-    val light2 = directionLight(0xFFFFFF, 2, -1, 3)
-    scene.add(light2)
+    // val light2 = directionLight(0xFFFFFF, 2, -1, 3)
+    // scene.add(light2)
     // scene.add(new CameraHelper(light2.shadow.camera))
 
     // scene.fog = new Fog(0xFFFFFF, 1, max * multiplier * 3)
@@ -87,10 +87,9 @@ object Main extends scalajs.js.JSApp {
     val light = new DirectionalLight(color, 0.75)
     light.position.set(x, y, z)
     light.castShadow = true
-    light.shadow.bias = -0.00005
+    light.shadow.bias = -0.00000001
     light.shadow.mapSize.x = 2048
     light.shadow.mapSize.y = 2048
-    // light.shadow.camera.visible = true
     light
   }
 
@@ -111,8 +110,14 @@ object Main extends scalajs.js.JSApp {
   }
 
   def buildGeometries(): List[Geometry] = {
-    val b1 = Solid.box(Point(-0.25, -0.25, -0.25), Point(1, 1, 1))
-    val b2 = Solid.box(Point(-0.5, -0.5, -0.2), Point(1, 1, 1))
-    List(b1 + b2)
+    var c = cylinder((0.0,0.0,-0.95), (0.0,0.0,0.95), 0.25) +
+            cylinder((0.0,-0.95,0.0), (0.0,0.95,0.0), 0.35) +
+            cylinder((-0.95,0.0,0.0), (0.95,0.0,0.0), 0.15)
+    val b = box((-0.5,-0.5,-0.5), (1.0,1.0,1.0)) +
+            box((0.1,0.1,0.1), (1.0,1.0,1.0)) +
+            box((-1.1,-1.1,-1.1), (1.0,1.0,1.0)) ^
+            sphere((0.0,0.0,0.0), 0.7) -
+            sphere((0.5,0.5,0.5), 0.35) - c
+    List(b)
   }
 }
