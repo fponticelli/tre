@@ -8,7 +8,7 @@ case class Point(x: Double, y: Double) {
   lazy val lengthSquared = x * x + y * y
 
   def abs() = Point(Math.abs(x), Math.abs(y))
-  def interpolate(that: Point)(d: Double) = (this + (that - this) * d)
+  def interpolate(that: Point)(d: Double) = this + (that - this) * d
   def isZero() = this == Point.zero
   def normalize() = this / length
 
