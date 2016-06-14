@@ -1,6 +1,6 @@
 package tre.d3
 
-case class Polygon(vertices: List[Vertex]) extends Iterable[Vertex] {
+case class Polygon(vertices: List[Vertex]) extends Iterable[Vertex] with Transformable[Polygon] {
   def flip() = Polygon(vertices.reverse.map{_.flip})
   override def iterator = vertices.iterator
 
@@ -15,4 +15,7 @@ case class Polygon(vertices: List[Vertex]) extends Iterable[Vertex] {
       }
     }
   }
+
+  def transform(matrix: tre.Matrix44): Polygon =
+    Polygon(vertices.map(_.transform(matrix)))
 }

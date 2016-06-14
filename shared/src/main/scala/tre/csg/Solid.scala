@@ -1,11 +1,9 @@
 package tre.csg
 
-import tre.d3.{Point, Polygon, Vertex}
+import tre.d3.{Point, Polygon, Transformable, Vertex}
 import scala.collection.mutable
 
-trait Solid extends Iterable[Polygon] {
-  def polygons: List[Polygon]
-
+case class Solid(polygons: List[Polygon]) extends Iterable[Polygon] with Transformable[Solid] {
   def iterator() = polygons iterator
 
   def +(other: Solid): Solid = {
@@ -19,7 +17,7 @@ trait Solid extends Iterable[Polygon] {
     b.invert
     a.build(b.all)
 
-    Solid.fromPolygons(a.all.toList)
+    Solid(a.all.toList)
   }
 
   def -(other: Solid): Solid = {
@@ -35,7 +33,7 @@ trait Solid extends Iterable[Polygon] {
     a.build(b.all)
     a.invert
 
-    Solid.fromPolygons(a.all.toList)
+    Solid(a.all.toList)
   }
 
   def ^(other: Solid): Solid = {
@@ -50,19 +48,16 @@ trait Solid extends Iterable[Polygon] {
     a.build(b.all)
     a.invert
 
-    Solid.fromPolygons(a.all.toList)
+    Solid(a.all.toList)
   }
+
+  def transform(matrix: tre.Matrix44): Solid =
+    Solid(polygons.map(_.transform(matrix)))
 
   override def toString() = s"Solid(polygons=${polygons.length})"
 }
 
 object Solid {
-  def fromPolygons(polys: List[Polygon]) =
-    new Solid {
-      def polygons = polys
-    }
-
-
   private val baseCube = List(
     (List(0, 4, 6, 2), Point(-1.0,  0.0,  0.0)),
     (List(1, 3, 7, 5), Point( 1.0,  0.0,  0.0)),
@@ -77,7 +72,7 @@ object Solid {
 
   def box(size: Point): Solid = box(Point.zero, size)
   def box(position: Point, size: Point): Solid =
-    fromPolygons(baseCube map {
+    Solid(baseCube map {
       info =>
         Polygon(info._1 map {
           i =>
@@ -118,11 +113,11 @@ object Solid {
         polygons append Polygon(vertices.toList)
       }
     }
-    Solid.fromPolygons(polygons.toList)
+    Solid(polygons.toList)
   }
 
   def cylinder(center: Point, length: Double, radius: Double)(implicit res: Resolution): Solid =
-    cylinder(center, center addZ length, radius)(res)
+    cylinder(center, center translateZ length, radius)(res)
 
   def cylinder(start: Point, end: Point, radius: Double)(implicit res: Resolution): Solid = {
     val slices   = res.resolutionByRadius(radius)
@@ -150,7 +145,7 @@ object Solid {
       polygons append Polygon(List(vertex(0, t1, 0), vertex(0, t0, 0), vertex(1, t0, 0), vertex(1, t1, 0)))
       polygons append Polygon(List(e, vertex(1, t1, 1), vertex(1, t0, 1)))
     }
-    return Solid.fromPolygons(polygons.toList)
+    return Solid(polygons.toList)
   }
 
   trait Resolution {
@@ -190,6 +185,6 @@ object Solid {
       polygons.push(new Polygon([point(0, t1, 0), point(0, t0, 0), point(1, t0, 0), point(1, t1, 0)]))
       polygons.push(new Polygon([e, point(1, t1, 1), point(1, t0, 1)]))
     }
-    return Solid.fromPolygons(polygons)
+    return Solid(polygons)
   }
  */

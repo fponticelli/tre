@@ -17,7 +17,7 @@ case class Matrix44(
   v42: Double,
   v43: Double,
   v44: Double
-) {
+) extends tre.d3.Transformable[Matrix44] {
   def *(that: Matrix44): Matrix44 =
     return Matrix44(
       v11 * that.v11 + v12 * that.v21 + v13 * that.v31 + v14 * that.v41,
@@ -60,22 +60,6 @@ case class Matrix44(
     val w = v0 * v14 + v1 * v24 + v2 * v34 + v3 * v44
     return tre.d2.Point(x / w, y / w);
   }
-
-  def mirrorX(): Matrix44 = this * Matrix44.mirroringX
-  def mirrorY(): Matrix44 = this * Matrix44.mirroringY
-  def rotateX(angle: Double): Matrix44 =
-    this * Matrix44.rotatingX(angle)
-  def rotateY(angle: Double): Matrix44 =
-    this * Matrix44.rotatingY(angle)
-  def rotateZ(angle: Double): Matrix44 =
-    this * Matrix44.rotatingZ(angle)
-
-  def scale(x: Double, y: Double, z: Double): Matrix44 =
-    this * Matrix44.scaling(x, y, z)
-  def scale(v: Double): Matrix44 =
-    scale(v, v, v)
-  def translate(x: Double, y: Double, z: Double): Matrix44 =
-    this * Matrix44.translating(x, y, z)
 
   // determine whether this matrix is a mirroring transformation
   def isMirroring(): Boolean = {
@@ -191,6 +175,9 @@ case class Matrix44(
     else
       Some(Matrix44(inv_11, inv_12, inv_13, inv_14, inv_21, inv_22, inv_23, inv_24, inv_31, inv_32, inv_33, inv_34, inv_41, inv_42, inv_43, inv_44))
   }
+
+  def transform(matrix: Matrix44): Matrix44 =
+    matrix * this // TODO or this * matrix ????
 }
 
 object Matrix44 {
@@ -210,9 +197,9 @@ object Matrix44 {
       (-2.0 * nx * w), (-2.0 * ny * w), (-2.0 * nz * w), 1
     )
   }
-  val mirroringX = mirroring(tre.d3.Plane.PX);
-  val mirroringY = mirroring(tre.d3.Plane.PY);
-  val mirroringZ = mirroring(tre.d3.Plane.PZ);
+  val mirroringYZ = mirroring(tre.d3.Plane.PX);
+  val mirroringXZ = mirroring(tre.d3.Plane.PY);
+  val mirroringXY = mirroring(tre.d3.Plane.PZ);
 
   def scaling(x: Double, y: Double, z: Double): Matrix44 =
     Matrix44(x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1)

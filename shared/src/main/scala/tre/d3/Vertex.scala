@@ -1,6 +1,6 @@
 package tre.d3
 
-case class Vertex(position : Point, normal : Point) {
+case class Vertex(position : Point, normal : Point) extends Transformable[Vertex] {
   def interpolate(that: Vertex)(t: Double) =
     Vertex(
       position.interpolate(that.position)(t),
@@ -8,6 +8,9 @@ case class Vertex(position : Point, normal : Point) {
     )
 
   def flip() = Vertex(position, -normal)
+
+  def transform(matrix: tre.Matrix44): Vertex =
+    Vertex(matrix.leftMultiplyPoint(this.position), matrix.leftMultiplyPoint(this.normal))
 
   override def toString() =
     s"Vertex(position=$position, normal=$normal)";
