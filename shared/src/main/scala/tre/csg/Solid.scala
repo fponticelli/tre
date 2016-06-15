@@ -1,7 +1,7 @@
 package tre.csg
 
-import tre.d3.{Point, Polygon, Transformable, Vertex}
 import scala.collection.mutable
+import tre.d3.{Point, Polygon, Transformable, Vertex}
 
 case class Solid(polygons: List[Polygon]) extends Iterable[Polygon] with Transformable[Solid] {
   def iterator() = polygons iterator
@@ -147,44 +147,4 @@ object Solid {
     }
     return Solid(polygons.toList)
   }
-
-  trait Resolution {
-    def resolutionByRadius(radius: Double): Int
-  }
-
-  implicit object StandardResolution extends Resolution {
-    def resolutionByRadius(radius: Double): Int = 36
-  }
 }
-
-/*
-  public static function cylinder(start: Point, end: Point, radius = 1.0, ?resolution: Double -> Int) {
-    if(null == resolution)
-      resolution = getResolution
-    var slices   = resolution(radius),
-        ray      = end.subtractPoint(start),
-        axisZ    = ray.normalize(),
-        isY      = (Math.abs(axisZ.y) > 0.5),
-        axisX    = Point.create(isY ? 1: 0, isY ? 0: 1, 0).cross(axisZ).normalize(),
-        axisY    = axisX.cross(axisZ).normalize(),
-        s        = new Vertex(start, axisZ.negate()),
-        e        = new Vertex(end, axisZ.normalize()),
-        polygons = [],
-        t0, t1
-    function point(stack, slice: Double, normalBlend) {
-      var angle = slice * Math.PI * 2,
-          out = axisX.multiply(Math.cos(angle)).addPoint(axisY.multiply(Math.sin(angle))),
-          pos = start.addPoint(ray.multiply(stack)).addPoint(out.multiply(radius)),
-          normal = out.multiply(1 - Math.abs(normalBlend)).addPoint(axisZ.multiply(normalBlend))
-      return new Vertex(pos, normal)
-    }
-    for (i in 0...slices) {
-      t0 = i / slices
-      t1 = (i + 1) / slices
-      polygons.push(new Polygon([s, point(0, t0, -1), point(0, t1, -1)]))
-      polygons.push(new Polygon([point(0, t1, 0), point(0, t0, 0), point(1, t0, 0), point(1, t1, 0)]))
-      polygons.push(new Polygon([e, point(1, t1, 1), point(1, t0, 1)]))
-    }
-    return Solid(polygons)
-  }
- */
