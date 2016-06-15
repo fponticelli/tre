@@ -1,9 +1,10 @@
 package tre.d3
 
+import tre.Matrix44
 import tre.Precision._
 import scala.collection.mutable
 
-case class Plane(normal : Point, w : Double) {
+case class Plane(normal : Point, w : Double) extends Transformable[Plane] {
   def flip() = Plane(-normal, -w)
 
   private val COPLANAR = 0
@@ -58,6 +59,9 @@ case class Plane(normal : Point, w : Double) {
     }
   }
 
+  def transform(matrix: Matrix44): Plane =
+    Plane(normal.transform(matrix), w) // TODO is w correct?
+
   override def toString(): String =
     s"Plane(normal=$normal,w=$w)"
 }
@@ -98,10 +102,8 @@ object Plane {
     Plane(normal, normal dot a)
   }
 
-  def fromNormalAndPoint(normal : Point, point : Point) {
-    val n = normal.normalize
-    new Plane(n, point dot n)
-  }
+  def fromNormalAndPoint(normal : Point, point : Point): Plane =
+    Plane(normal, point.dot(normal.normalize))
 }
 
 /*

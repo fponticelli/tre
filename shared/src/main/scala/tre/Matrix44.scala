@@ -1,5 +1,8 @@
 package tre
 
+import tre.d3.Plane
+import tre.d3.OrthoNormalBasis
+
 case class Matrix44(
   v11: Double,
   v12: Double,
@@ -204,21 +207,32 @@ object Matrix44 {
   def scaling(x: Double, y: Double, z: Double): Matrix44 =
     Matrix44(x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1)
 
+  def rotating(rotationCenter: tre.d3.Point, rotationAxis: tre.d3.Point, radians:  Double): Matrix44 = {
+    val rotationPlane = Plane.fromNormalAndPoint(rotationAxis, rotationCenter)
+    val orthobasis = OrthoNormalBasis.fromPlane(rotationPlane)
+    val negation = -rotationCenter
+    val t = Matrix44.translating(negation.x, negation.y, negation.z)
+    ((t * orthobasis.projectionMatrix).rotateZ(radians) * orthobasis.inverseProjectionMatrix).translate(rotationCenter.x, rotationCenter.y, rotationCenter.z)
+  }
+
   def rotatingX(angle: Double): Matrix44 = {
     val c = Math.cos(angle)
     val s = Math.sin(angle)
     Matrix44(1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, 0, 0, 0, 1);
   }
+
   def rotatingY(angle: Double): Matrix44 = {
     val c = Math.cos(angle)
     val s = Math.sin(angle)
     Matrix44(c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 0, 0, 0, 1);
   }
+
   def rotatingZ(angle: Double): Matrix44 = {
     val c = Math.cos(angle)
     val s = Math.sin(angle)
     Matrix44(c, s, 0, 0, -s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
   }
+
   def translating(x: Double, y: Double, z: Double): Matrix44 =
     Matrix44(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1);
 }

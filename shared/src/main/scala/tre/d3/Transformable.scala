@@ -19,6 +19,8 @@ abstract trait Transformable[T] {
     transform(Matrix44.rotatingZ(angle))
   def translate(x: Double, y: Double, z: Double): T =
     transform(Matrix44.translating(x, y, z))
+  def translate(vector: Point): T =
+    translate(vector.x, vector.y, vector.z)
   def translateX(x: Double): T =
     translate(x, 0, 0)
   def translateY(y: Double): T =
