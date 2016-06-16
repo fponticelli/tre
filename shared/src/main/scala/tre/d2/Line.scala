@@ -1,7 +1,5 @@
 package tre.d2
 
-import tre.Matrix23
-
 class Line(val normal: Point, val w: Double) extends Transformable[Line] {
   def isHorizontal(): Boolean =
     normal.x == 0

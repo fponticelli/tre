@@ -1,7 +1,5 @@
 package tre.d2
 
-import tre.Matrix23
-
 abstract trait Transformable[T] {
   def transform(matrix: Matrix23): T
 

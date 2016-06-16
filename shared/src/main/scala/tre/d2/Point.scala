@@ -1,6 +1,5 @@
 package tre.d2
 
-import tre.Matrix23
 import tre.Precision._
 import Math._
 

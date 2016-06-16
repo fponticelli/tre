@@ -1,7 +1,7 @@
 package tre.csg
 
 import scala.collection.mutable
-import tre.d3.{Point, Polygon, Transformable, Vertex}
+import tre.d3.{Matrix44, Point, Polygon, Transformable, Vertex}
 
 case class Solid(polygons: List[Polygon]) extends Iterable[Polygon] with Transformable[Solid] {
   def iterator() = polygons iterator
@@ -51,7 +51,7 @@ case class Solid(polygons: List[Polygon]) extends Iterable[Polygon] with Transfo
     Solid(a.all.toList)
   }
 
-  def transform(matrix: tre.Matrix44): Solid =
+  def transform(matrix: Matrix44): Solid =
     Solid(polygons.map(_.transform(matrix)))
 
   override def toString() = s"Solid(polygons=${polygons.length})"

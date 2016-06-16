@@ -1,7 +1,4 @@
-package tre
-
-import tre.d3.Plane
-import tre.d3.OrthoNormalBasis
+package tre.d3
 
 case class Matrix44(
   v11: Double,

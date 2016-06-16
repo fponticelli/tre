@@ -1,6 +1,5 @@
 package tre.d3
 
-import tre.Matrix44
 import tre.Precision._
 import scala.collection.mutable
 

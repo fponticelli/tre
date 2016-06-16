@@ -9,7 +9,7 @@ case class Vertex(position : Point, normal : Point) extends Transformable[Vertex
 
   def flip() = Vertex(position, -normal)
 
-  def transform(matrix: tre.Matrix44): Vertex =
+  def transform(matrix: Matrix44): Vertex =
     Vertex(matrix.leftMultiplyPoint(this.position), matrix.leftMultiplyPoint(this.normal))
 
   override def toString() =

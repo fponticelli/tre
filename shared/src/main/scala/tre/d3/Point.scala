@@ -48,7 +48,7 @@ case class Point(x: Double, y: Double, z: Double) extends Transformable[Point] {
   def withY (d: Double) = Point(x, d, z)
   def withZ (d: Double) = Point(x, y, d)
 
-  def transform(matrix: tre.Matrix44): Point =
+  def transform(matrix: Matrix44): Point =
     matrix.leftMultiplyPoint(this)
 
   def + (that: Point) = Point(x + that.x, y + that.y, z + that.z)

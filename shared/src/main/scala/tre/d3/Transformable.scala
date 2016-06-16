@@ -1,7 +1,5 @@
 package tre.d3
 
-import tre.Matrix44
-
 abstract trait Transformable[T] {
   def transform(matrix: Matrix44): T
 

@@ -1,4 +1,4 @@
-package tre
+package tre.d2
 
 case class Matrix23(a: Double, b: Double, c: Double, d: Double, e: Double, f: Double) {
   def *(that: Matrix23): Matrix23 =

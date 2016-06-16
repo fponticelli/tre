@@ -16,6 +16,6 @@ case class Polygon(vertices: List[Vertex]) extends Iterable[Vertex] with Transfo
     }
   }
 
-  def transform(matrix: tre.Matrix44): Polygon =
+  def transform(matrix: Matrix44): Polygon =
     Polygon(vertices.map(_.transform(matrix)))
 }

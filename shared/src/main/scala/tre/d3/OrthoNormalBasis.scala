@@ -1,7 +1,5 @@
 package tre.d3
 
-import tre.Matrix44
-
 case class OrthoNormalBasis(plane: Plane, private val rightvector: Point) extends Transformable[OrthoNormalBasis]{
   val v = plane.normal.cross(rightvector).normalize
   val u = v.cross(plane.normal)
