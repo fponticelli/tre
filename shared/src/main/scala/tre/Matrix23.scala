@@ -11,6 +11,11 @@ case class Matrix23(a: Double, b: Double, c: Double, d: Double, e: Double, f: Do
       b * that.e + d * that.f + f
     )
 
+  def leftMultiplyPoint(point: tre.d2.Point): tre.d2.Point =
+    tre.d2.Point(
+      a * point.x + b * point.y + c,
+      d * point.x + e * point.y + f)
+
   def mirrorX(): Matrix23 = this * Matrix23.mirroringX
   def mirrorY(): Matrix23 = this * Matrix23.mirroringY
 
