@@ -4,6 +4,7 @@ import org.denigma.threejs.{ Geometry => TJSGeom, Vector3 => TJSVec, Face3 => TJ
 import tre.csg.Solid
 import tre.d3.{Point, Polygon, Vertex}
 import scala.collection.immutable.HashSet
+import scala.scalajs.js
 
 object Convert {
   implicit def solid2geometry(solid: Solid): TJSGeom = {
@@ -19,13 +20,23 @@ object Convert {
     val fs = geom.faces
 
     solid.flatMap {
-      polygon => polygon.triangles().map(t => new TJSFace(map(t._1.position), map(t._2.position), map(t._3.position)))
+      polygon => polygon.triangles().map(t =>
+        new TJSFace(
+          map(t._1.position),
+          map(t._2.position),
+          map(t._3.position),
+          js.Array[TJSVec](
+            new TJSVec(t._1.normal.x, t._1.normal.y, t._1.normal.z),
+            new TJSVec(t._2.normal.x, t._2.normal.y, t._2.normal.z),
+            new TJSVec(t._3.normal.x, t._3.normal.y, t._3.normal.z)
+          )
+        )
+      )
     }.foreach(fs.push(_))
     set.foreach(v => vs.push(new TJSVec(v.x, v.y, v.z)))
 
     geom.computeBoundingBox()
     geom.computeBoundingSphere()
-    // TODO inject normals, do not compute
     geom.computeFaceNormals()
     geom
   }
