@@ -22,7 +22,7 @@ case class Matrix44(
   v44: Double
 ) extends tre.d3.Transformable[Matrix44] {
   def *(that: Matrix44): Matrix44 =
-    return Matrix44(
+    Matrix44(
       v11 * that.v11 + v12 * that.v21 + v13 * that.v31 + v14 * that.v41,
       v11 * that.v12 + v12 * that.v22 + v13 * that.v32 + v14 * that.v42,
       v11 * that.v13 + v12 * that.v23 + v13 * that.v33 + v14 * that.v43,
@@ -39,7 +39,7 @@ case class Matrix44(
       v41 * that.v12 + v42 * that.v22 + v43 * that.v32 + v44 * that.v42,
       v41 * that.v13 + v42 * that.v23 + v43 * that.v33 + v44 * that.v43,
       v41 * that.v14 + v42 * that.v24 + v43 * that.v34 + v44 * that.v44
-    );
+    )
 
   def leftMultiplyPoint(point: tre.d3.Point): tre.d3.Point = {
     val v0 = point.x
@@ -50,7 +50,7 @@ case class Matrix44(
     val y = v0 * v12 + v1 * v22 + v2 * v32 + v3 * v42
     val z = v0 * v13 + v1 * v23 + v2 * v33 + v3 * v43
     val w = v0 * v14 + v1 * v24 + v2 * v34 + v3 * v44
-    tre.d3.Point(x / w, y / w, z / w);
+    tre.d3.Point(x / w, y / w, z / w)
   }
 
   def leftMultiplyPoint(point: tre.d2.Point): tre.d2.Point = {
@@ -61,7 +61,7 @@ case class Matrix44(
     val x = v0 * v11 + v1 * v21 + v2 * v31 + v3 * v41
     val y = v0 * v12 + v1 * v22 + v2 * v32 + v3 * v42
     val w = v0 * v14 + v1 * v24 + v2 * v34 + v3 * v44
-    return tre.d2.Point(x / w, y / w);
+    tre.d2.Point(x / w, y / w)
   }
 
   // determine whether this matrix is a mirroring transformation
@@ -172,7 +172,7 @@ case class Matrix44(
                   v21  * v13  * v32 +
                   v31  * v12  * v23 -
                   v31  * v13  * v22
-    val det = v11 * inv_11 + v12 * inv_21 + v13 * inv_31 + v14 * inv_41;
+    val det = v11 * inv_11 + v12 * inv_21 + v13 * inv_31 + v14 * inv_41
     if(det == 0)
       None
     else
@@ -200,9 +200,9 @@ object Matrix44 {
       (-2.0 * nx * w), (-2.0 * ny * w), (-2.0 * nz * w), 1
     )
   }
-  val mirroringYZ = mirroring(tre.d3.Plane.PX);
-  val mirroringXZ = mirroring(tre.d3.Plane.PY);
-  val mirroringXY = mirroring(tre.d3.Plane.PZ);
+  val mirroringYZ = mirroring(tre.d3.Plane.PX)
+  val mirroringXZ = mirroring(tre.d3.Plane.PY)
+  val mirroringXY = mirroring(tre.d3.Plane.PZ)
 
   def scaling(x: Double, y: Double, z: Double): Matrix44 =
     Matrix44(x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1)
@@ -218,21 +218,21 @@ object Matrix44 {
   def rotatingX(angle: Double): Matrix44 = {
     val c = Math.cos(angle)
     val s = Math.sin(angle)
-    Matrix44(1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, 0, 0, 0, 1);
+    Matrix44(1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, 0, 0, 0, 1)
   }
 
   def rotatingY(angle: Double): Matrix44 = {
     val c = Math.cos(angle)
     val s = Math.sin(angle)
-    Matrix44(c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 0, 0, 0, 1);
+    Matrix44(c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 0, 0, 0, 1)
   }
 
   def rotatingZ(angle: Double): Matrix44 = {
     val c = Math.cos(angle)
     val s = Math.sin(angle)
-    Matrix44(c, s, 0, 0, -s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+    Matrix44(c, s, 0, 0, -s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
   }
 
   def translating(x: Double, y: Double, z: Double): Matrix44 =
-    Matrix44(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1);
+    Matrix44(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1)
 }
