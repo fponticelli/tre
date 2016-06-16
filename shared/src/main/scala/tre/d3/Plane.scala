@@ -59,8 +59,26 @@ case class Plane(normal : Point, w : Double) extends Transformable[Plane] {
     }
   }
 
-  def transform(matrix: Matrix44): Plane =
-    Plane(normal.transform(matrix), w) // TODO is w correct?
+  def transform(matrix: Matrix44): Plane = {
+    // get two vectors in the plane:
+    val r = normal.randomNonParallelVector()
+    val u = normal.cross(r)
+    val v = normal.cross(u)
+    // get 3 points in the plane:
+    val p1 = normal * w
+    val p2 = p1 + u
+    val p3 = p1 + v
+    // transform the points and create a new plane from the transformed points:
+    var newplane = Plane.fromPoints(
+      p1.transform(matrix),
+      p2.transform(matrix),
+      p3.transform(matrix)
+    )
+    if(matrix.isMirroring())
+      newplane.flip() // the transform is mirroring
+    else
+      newplane
+  }
 
   override def toString(): String =
     s"Plane(normal=$normal,w=$w)"
@@ -107,33 +125,6 @@ object Plane {
 }
 
 /*
-  public function equals(other : Plane)
-    return normal.equals(other.normal) && (w == other.w)
-
-  public function transform(matrix : Matrix44) {
-    var ismirror = matrix.isMirroring(),
-      // get two vectors in the plane:
-      r = normal.randomNonParallelVector(),
-      u = normal.cross(r),
-      v = normal.cross(u),
-      // get 3 points in the plane:
-      point1 = normal.multiply(w),
-      point2 = point1.addPoint(u),
-      point3 = point1.addPoint(v)
-    // transform the points:
-    point1 = point1.transform(matrix)
-    point2 = point2.transform(matrix)
-    point3 = point3.transform(matrix)
-    // and create a new plane from the transformed points:
-    var newplane = Plane.fromPoints(point1, point2, point3)
-    if(ismirror) {
-      // the transform is mirroring
-      // We should mirror the plane:
-      newplane = newplane.flip()
-    }
-    return newplane
-  }
-
   // robust splitting of a line by a plane
   // will work even if the line is parallel to the plane
   public function splitLineBetweenPoints(p1 : Point, p2 : Point) {
@@ -163,9 +154,4 @@ object Plane {
     var mirrored = point3d.subtractPoint(this.normal.multiply(distance * 2.0))
     return mirrored
   }
-
-  static inline var COPLANAR = 0
-  static inline var FRONT = 1
-  static inline var BACK = 2
-  static inline var SPANNING = 3
  */
