@@ -6,10 +6,13 @@ import org.scalajs.dom
 import org.scalajs.dom.MouseEvent
 import org.scalajs.dom.raw.{ HTMLTextAreaElement, HTMLElement }
 
-import tre.threejs.Convert._
+import tre.threejs.Convert
+import tre.csg.Solid
 import tre.csg.Solid._
+import tre.csg.Resolution
 import tre.d3._
 import tre.d3.Point._
+import tre.util.Measure
 
 object Main extends scalajs.js.JSApp {
   val width  = 800
@@ -99,7 +102,10 @@ object Main extends scalajs.js.JSApp {
     val material = new MeshLambertMaterial(js.Dynamic.literal(
           color = new Color(0x888888)
         ).asInstanceOf[MeshLambertMaterialParameters])
-    buildGeometries.foreach((g: Geometry) => scene.add({
+    val m = Measure.time(buildSolids)
+    var g = buildGeometries(m.computation)
+    println(s"CSG computation took: ${m.value / 1000000000.0}s")
+    g.foreach((g: Geometry) => scene.add({
       val mesh = new Mesh(g, material)
       mesh.receiveShadow = true
       mesh.castShadow = true
@@ -109,12 +115,16 @@ object Main extends scalajs.js.JSApp {
     setupCamera(camera, scene)
   }
 
-  def buildGeometries(): List[Geometry] = {
+  def buildGeometries(xs: List[Solid]): List[Geometry] =
+    xs.map(Convert.solid2geometry)
+
+  def buildSolids(): List[Solid] = {
+    implicit val res = Resolution.byFeature(0.08)
     val b = cube((-0.5,-0.5,-0.5), 1.0) +
             cube((0.1,0.1,0.1), 1.0) +
             cube((-1.1,-1.1,-1.1), 1.0) ^
             sphere((0.0,0.0,0.0), 0.7) -
-            sphere((0.5,0.5,0.5), 0.35) -
+            sphere((-0.5,-0.5,-0.5), 0.35) -
             cylinder((0.0,0.0,-0.95), (0.0,0.0,0.95), 0.25) -
             cylinder((0.0,-0.95,0.0), (0.0,0.95,0.0), 0.35) -
             cylinder((-0.95,0.0,0.0), (0.95,0.0,0.0), 0.15)
