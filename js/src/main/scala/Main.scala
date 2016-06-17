@@ -1,4 +1,4 @@
-import org.denigma.threejs._
+import org.denigma.threejs.{ PerspectiveCamera, Scene, WebGLRenderer, Box3, AxisHelper, CircleGeometry, Color, MeshLambertMaterial, MeshLambertMaterialParameters, AmbientLight, DirectionalLight, Mesh, Geometry }
 import org.denigma.threejs.extensions.controls.{ CameraControls, JumpCameraControls, HoverControls }
 import org.denigma.threejs.extras.{ TrackBallControls, HtmlSprite }
 import scala.scalajs.js
@@ -115,10 +115,10 @@ object Main extends scalajs.js.JSApp {
     setupCamera(camera, scene)
   }
 
-  def buildGeometries(xs: List[Solid]): List[Geometry] =
+  def buildGeometries(xs: Vector[Solid]): Vector[Geometry] =
     xs.map(Convert.solid2geometry)
 
-  def buildSolids(): List[Solid] = {
+  def buildSolids(): Vector[Solid] = {
     implicit val res = Resolution.byFeature(0.08)
     val b = cube((-0.5,-0.5,-0.5), 1.0) +
             cube((0.1,0.1,0.1), 1.0) +
@@ -128,6 +128,6 @@ object Main extends scalajs.js.JSApp {
             cylinder((0.0,0.0,-0.95), (0.0,0.0,0.95), 0.25) -
             cylinder((0.0,-0.95,0.0), (0.0,0.95,0.0), 0.35) -
             cylinder((-0.95,0.0,0.0), (0.95,0.0,0.0), 0.15)
-    List(b)
+    Vector(b)
   }
 }

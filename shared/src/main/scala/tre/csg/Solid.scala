@@ -3,7 +3,7 @@ package tre.csg
 import scala.collection.mutable
 import tre.d3.{Matrix44, Point, Polygon, Transformable, Vertex}
 
-case class Solid(polygons: List[Polygon]) extends Iterable[Polygon] with Transformable[Solid] {
+case class Solid(polygons: Vector[Polygon]) extends Iterable[Polygon] with Transformable[Solid] {
   def iterator() = polygons iterator
 
   def +(other: Solid): Solid = {
@@ -17,7 +17,7 @@ case class Solid(polygons: List[Polygon]) extends Iterable[Polygon] with Transfo
     b.invert
     a.build(b.all)
 
-    Solid(a.all.toList)
+    Solid(a.all.toVector)
   }
 
   def -(other: Solid): Solid = {
@@ -33,7 +33,7 @@ case class Solid(polygons: List[Polygon]) extends Iterable[Polygon] with Transfo
     a.build(b.all)
     a.invert
 
-    Solid(a.all.toList)
+    Solid(a.all.toVector)
   }
 
   def ^(other: Solid): Solid = {
@@ -48,7 +48,7 @@ case class Solid(polygons: List[Polygon]) extends Iterable[Polygon] with Transfo
     a.build(b.all)
     a.invert
 
-    Solid(a.all.toList)
+    Solid(a.all.toVector)
   }
 
   def transform(matrix: Matrix44): Solid =
@@ -58,13 +58,13 @@ case class Solid(polygons: List[Polygon]) extends Iterable[Polygon] with Transfo
 }
 
 object Solid {
-  private val baseCube = List(
-    (List(0, 4, 6, 2), Point(-1.0,  0.0,  0.0)),
-    (List(1, 3, 7, 5), Point( 1.0,  0.0,  0.0)),
-    (List(0, 1, 5, 4), Point( 0.0, -1.0,  0.0)),
-    (List(2, 6, 7, 3), Point( 0.0,  1.0,  0.0)),
-    (List(0, 2, 3, 1), Point( 0.0,  0.0, -1.0)),
-    (List(4, 5, 7, 6), Point( 0.0,  0.0,  1.0))
+  private val baseCube = Vector(
+    (Vector(0, 4, 6, 2), Point(-1.0,  0.0,  0.0)),
+    (Vector(1, 3, 7, 5), Point( 1.0,  0.0,  0.0)),
+    (Vector(0, 1, 5, 4), Point( 0.0, -1.0,  0.0)),
+    (Vector(2, 6, 7, 3), Point( 0.0,  1.0,  0.0)),
+    (Vector(0, 2, 3, 1), Point( 0.0,  0.0, -1.0)),
+    (Vector(4, 5, 7, 6), Point( 0.0,  0.0,  1.0))
   )
 
   def cube(side: Double): Solid = cube(Point.zero, side)
@@ -110,10 +110,10 @@ object Solid {
         if (j < stacks - 1)
           vertices append vertex((i.toDouble + 1) / slices, (j.toDouble + 1) / stacks)
         vertices append vertex(i.toDouble / slices, (j.toDouble + 1) / stacks)
-        polygons append Polygon(vertices.toList)
+        polygons append Polygon(vertices.toVector)
       }
     }
-    Solid(polygons.toList)
+    Solid(polygons.toVector)
   }
 
   def cylinder(center: Point, length: Double, radius: Double)(implicit res: Resolution): Solid =
@@ -141,10 +141,10 @@ object Solid {
     for(i <- 0 until slices) {
       val t0 = i.toDouble / slices
       val t1 = (i.toDouble + 1) / slices
-      polygons append Polygon(List(s, vertex(0, t0, -1), vertex(0, t1, -1)))
-      polygons append Polygon(List(vertex(0, t1, 0), vertex(0, t0, 0), vertex(1, t0, 0), vertex(1, t1, 0)))
-      polygons append Polygon(List(e, vertex(1, t1, 1), vertex(1, t0, 1)))
+      polygons append Polygon(Vector(s, vertex(0, t0, -1), vertex(0, t1, -1)))
+      polygons append Polygon(Vector(vertex(0, t1, 0), vertex(0, t0, 0), vertex(1, t0, 0), vertex(1, t1, 0)))
+      polygons append Polygon(Vector(e, vertex(1, t1, 1), vertex(1, t0, 1)))
     }
-    return Solid(polygons.toList)
+    return Solid(polygons.toVector)
   }
 }

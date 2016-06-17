@@ -11,7 +11,7 @@ object Main {
     println(s"CSG computation took: ${m.value / 1000000000.0}s")
   }
 
-  def buildSolids(): List[Solid] = {
+  def buildSolids(): Vector[Solid] = {
     implicit val res = Resolution.byFeature(0.08)
     val b = cube((-0.5,-0.5,-0.5), 1.0) +
             cube((0.1,0.1,0.1), 1.0) +
@@ -21,6 +21,6 @@ object Main {
             cylinder((0.0,0.0,-0.95), (0.0,0.0,0.95), 0.25) -
             cylinder((0.0,-0.95,0.0), (0.0,0.95,0.0), 0.35) -
             cylinder((-0.95,0.0,0.0), (0.95,0.0,0.0), 0.15)
-    List(b)
+    Vector(b)
   }
 }

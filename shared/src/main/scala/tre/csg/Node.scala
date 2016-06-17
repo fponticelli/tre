@@ -6,7 +6,7 @@ import tre.Precision._
 
 import scala.collection.mutable
 
-class Node(polys: Option[List[Polygon]]) {
+class Node(polys: Option[Vector[Polygon]]) {
   var plane: Plane = null
   var front: Node = null
   var back: Node = null
@@ -97,8 +97,8 @@ class Node(polys: Option[List[Polygon]]) {
 /*
 abstract sealed class Node {
   def invert(): Node
-  def polygons(): List[Polygon]
-  def clipPolygons(polygons: List[Polygon])
+  def polygons(): Vector[Polygon]
+  def clipPolygons(polygons: Vector[Polygon])
 }
 
 case class NodeWithFront(pnode: PNode, front: Node) extends Node {
@@ -119,17 +119,17 @@ case class NodeWithFrontAndBack(pnode: PNode, front: Node, back: Node) extends N
     front.polygons ++ pnode.polygons ++ back.polygons
 }
 
-case class PNode(polygons: List[Polygon]) extends Node {
+case class PNode(polygons: Vector[Polygon]) extends Node {
   def invert() = PNode(polygons map { _.flip() })
-  def clipPolygons(that: List[Polygon]): List[Polygon] =
+  def clipPolygons(that: Vector[Polygon]): Vector[Polygon] =
     if(polygons.length == 0)
       that
     else {
       val plane = polygons(0).plane
-      val t = that.map(plane.splitPolygon(_)).foldLeft((List[Polygon](), List[Polygon]())) {
-        (acc: (List[Polygon], List[Polygon]), splits: List[SplitPolygon]) =>
-          val t = splits.foldLeft((List[Polygon](), List[Polygon]())) {
-            (acc: (List[Polygon], List[Polygon]), split: SplitPolygon) =>
+      val t = that.map(plane.splitPolygon(_)).foldLeft((Vector[Polygon](), Vector[Polygon]())) {
+        (acc: (Vector[Polygon], Vector[Polygon]), splits: Vector[SplitPolygon]) =>
+          val t = splits.foldLeft((Vector[Polygon](), Vector[Polygon]())) {
+            (acc: (Vector[Polygon], Vector[Polygon]), split: SplitPolygon) =>
               split match {
                 case CoplanarFront(p) =>
                   (acc._1 :+ p, acc._2)
@@ -148,11 +148,11 @@ case class PNode(polygons: List[Polygon]) extends Node {
 }
 
 object Node {
-  type FPB = (List[Polygon], List[Polygon], List[Polygon])
-  def build(plane: Plane, polygons: List[Polygon]): Node = {
+  type FPB = (Vector[Polygon], Vector[Polygon], Vector[Polygon])
+  def build(plane: Plane, polygons: Vector[Polygon]): Node = {
     val fpb = polygons
       .flatMap(plane.splitPolygon(_))
-      .foldLeft(List[Polygon](), List[Polygon](), List[Polygon]()) {
+      .foldLeft(Vector[Polygon](), Vector[Polygon](), Vector[Polygon]()) {
       (acc: FPB, split: SplitPolygon) => {
         split match {
           case CoplanarFront(p) => (acc._1, acc._2 :+ p, acc._3)
@@ -173,7 +173,7 @@ object Node {
     }
   }
 
-  def build(polygons: List[Polygon]): Node =
+  def build(polygons: Vector[Polygon]): Node =
     build(polygons(0).plane, polygons)
 
 }

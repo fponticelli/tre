@@ -11,30 +11,30 @@ case class Plane(normal : Point, w : Double) extends Transformable[Plane] {
   private val BACK = 2
   private val SPANNING = 3
 
-  def splitPolygon(polygon: Polygon): List[SplitPolygon] = {
-    val (types, polygonType) = polygon.foldLeft((List[Int](), COPLANAR)){
-      (acc: (List[Int], Int), vertex: Vertex) =>
+  def splitPolygon(polygon: Polygon): Vector[SplitPolygon] = {
+    val (types, polygonType) = polygon.foldLeft((Vector[Int](), COPLANAR)){
+      (acc: (Vector[Int], Int), vertex: Vertex) =>
         val t = normal.dot(vertex.position) - w
         val polygonType = if(t <~ 0) BACK else if(t >~ 0) FRONT else COPLANAR
-        val list: List[Int] = acc._1 :+ polygonType
+        val list: Vector[Int] = acc._1 :+ polygonType
         (list, acc._2 | polygonType)
     }
 
     if(polygonType == COPLANAR) {
       if(normal.dot(polygon.plane.normal) > 0)
-        List(CoplanarFront(polygon))
+        Vector(CoplanarFront(polygon))
       else
-        List(CoplanarBack(polygon))
+        Vector(CoplanarBack(polygon))
     } else if(polygonType == FRONT) {
-      List(Front(polygon))
+      Vector(Front(polygon))
     } else if(polygonType == BACK) {
-      List(Back(polygon))
+      Vector(Back(polygon))
     } else { // SPANNING
       val len = polygon.vertices.length
       val range = 0 until len
-      val (front: List[Vertex], back: List[Vertex]) = range.foldLeft((List[Vertex](), List[Vertex]()))
+      val (front: Vector[Vertex], back: Vector[Vertex]) = range.foldLeft((Vector[Vertex](), Vector[Vertex]()))
       {
-        (acc: (List[Vertex], List[Vertex]), i: Int) =>
+        (acc: (Vector[Vertex], Vector[Vertex]), i: Int) =>
           val j = (i + 1) % len
           val ti = types(i)
           val tj = types(j)
@@ -42,7 +42,7 @@ case class Plane(normal : Point, w : Double) extends Transformable[Plane] {
           val vj = polygon.vertices(j)
           val append = if((ti | tj) == SPANNING) {
             val t = (w - normal.dot(vi.position)) / normal.dot(vj.position - vi.position)
-            List(vi.interpolate(vj)(t))
+            Vector(vi.interpolate(vj)(t))
           } else {
             Nil
           }
@@ -54,7 +54,7 @@ case class Plane(normal : Point, w : Double) extends Transformable[Plane] {
           )
       }
 
-      (if(front.length > 2) List(Front(Polygon(front))) else Nil) ++ (if(back.length > 2) List(Back(Polygon(back))) else Nil)
+      (if(front.length > 2) Vector(Front(Polygon(front))) else Vector()) ++ (if(back.length > 2) Vector(Back(Polygon(back))) else Vector())
     }
   }
 
