@@ -7,8 +7,8 @@ case class Solid(polygons: Vector[Polygon]) extends Iterable[Polygon] with Trans
   def iterator() = polygons iterator
 
   def +(other: Solid): Solid = {
-    val a = new Node(Some(polygons))
-    val b = new Node(Some(other.polygons))
+    val a = new Node(polygons)
+    val b = new Node(other.polygons)
 
     a clipTo b
     b clipTo a
@@ -21,8 +21,8 @@ case class Solid(polygons: Vector[Polygon]) extends Iterable[Polygon] with Trans
   }
 
   def -(other: Solid): Solid = {
-    val a = new Node(Some(polygons))
-    val b = new Node(Some(other.polygons))
+    val a = new Node(polygons)
+    val b = new Node(other.polygons)
 
     a.invert
     a clipTo b
@@ -37,8 +37,8 @@ case class Solid(polygons: Vector[Polygon]) extends Iterable[Polygon] with Trans
   }
 
   def ^(other: Solid): Solid = {
-    val a = new Node(Some(polygons))
-    val b = new Node(Some(other.polygons))
+    val a = new Node(polygons)
+    val b = new Node(other.polygons)
 
     a.invert
     b clipTo a
