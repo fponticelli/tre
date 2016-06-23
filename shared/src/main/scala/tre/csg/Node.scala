@@ -35,12 +35,12 @@ class Node(polys: ArrayBuffer[Polygon]) {
         splitPolygonByPlane(plane, poly, this.polygons, this.polygons, front, back)
       if(front.length > 0) {
         if(null == this.front)
-        this.front = new Node(new ArrayBuffer[Polygon])
+          this.front = new Node(new ArrayBuffer[Polygon])
         this.front.build(front)
       }
       if(back.length > 0) {
         if(null == this.back)
-        this.back = new Node(new ArrayBuffer[Polygon])
+          this.back = new Node(new ArrayBuffer[Polygon])
         this.back.build(back)
       }
     }
@@ -49,9 +49,11 @@ class Node(polys: ArrayBuffer[Polygon]) {
   def splitPolygonByPlane(plane: Plane, polygon: Polygon, coplanarFront: ArrayBuffer[Polygon], coplanarBack: ArrayBuffer[Polygon], front: ArrayBuffer[Polygon], back: ArrayBuffer[Polygon]) = {
     val types = new ArrayBuffer[Int]
     var polygonType = 0
+    var t: Double = 0
+    var type_ : Int = 0
     for(vertex <- polygon) {
-      val t = plane.normal.dot(vertex.position) - plane.w
-      val type_ = if(t <~ 0) BACK else if(t >~ 0) FRONT else COPLANAR
+      t = plane.normal.dot(vertex.position) - plane.w
+      type_ = if(t <~ 0) BACK else if(t >~ 0) FRONT else COPLANAR
       polygonType |= type_
       types += type_
     }
@@ -66,23 +68,29 @@ class Node(polys: ArrayBuffer[Polygon]) {
     } else if(polygonType == BACK) {
       back += polygon
     } else { // SPANNING
-      // val range = 0 until len
       val f = new ArrayBuffer[Vertex]
       val b = new ArrayBuffer[Vertex]
       val len = polygon.vertices.length
+      var j = 0
+      var ti = 0
+      var tj = 0
+      var vi: Vertex = null
+      var vj: Vertex = null
+      var t: Double = 0
+      var v: Vertex = null
       for(i <- 0 until len) {
-        val j = (i + 1) % len
-        val ti = types(i)
-        val tj = types(j)
-        val vi = polygon.vertices(i)
-        val vj = polygon.vertices(j)
+        j = (i + 1) % len
+        ti = types(i)
+        tj = types(j)
+        vi = polygon.vertices(i)
+        vj = polygon.vertices(j)
         if(ti != BACK)
           f += vi
         if(ti != FRONT)
           b += vi
         if((ti | tj) == SPANNING) {
-          val t = (plane.w - plane.normal.dot(vi.position)) / plane.normal.dot(vj.position - vi.position)
-          val v = vi.interpolate(vj)(t)
+          t = (plane.w - plane.normal.dot(vi.position)) / plane.normal.dot(vj.position - vi.position)
+          v = vi.interpolate(vj)(t)
           f += v
           b += v
         }
